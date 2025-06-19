@@ -1,6 +1,6 @@
 <?php
 // Dane do połączenia z bazą danych
-$host = 'pogoda.postgres.database.azure.com';
+$host = 'pogoda.database.windows.net';
 $db = 'BazaPogodowa';
 $user = 'Pawel';
 $pass = 'Admin123';
