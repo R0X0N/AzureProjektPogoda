@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Informacje pogodowe</title>
-    <link rel="stylesheet" type="text/css" href="styles/style-index.css">
+    <link rel="stylesheet" type="text/css" href="style-index.css">
 </head>
 <body>
 <header>
@@ -71,7 +71,7 @@
                     echo '<p>Czas: ' . $row['czas'] . '</p>';
                     // Dodanie ikony pogody na podstawie opisu pogody
                     $weatherIcon = getWeatherIcon($row['opis']);
-                    echo '<img src="weather_icons/' . $weatherIcon . '.png" alt="' . $row['opis'] . '">';
+                    echo '<img src="' . $weatherIcon . '.png" alt="' . $row['opis'] . '">';
                     // Wyświetlanie pozostałych informacji
                     echo '<p>Opis pogody: ' . $row['opis'] . '</p>';
                     echo '<p>Miejscowość: ' . $row['nazwa_miejscowosci'] . '</p>';
