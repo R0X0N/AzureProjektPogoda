@@ -17,7 +17,7 @@ function getWeatherIcon($weatherDescription)
     // Bezpieczne porównanie (małe litery)
     $normalizedDescription = strtolower(trim($weatherDescription));
     // Jeśli opis pogody jest znany, zwróć odpowiednią nazwę pliku ikony, w przeciwnym razie zwróć domyślną ikonę
-    return 'icons/' . (isset($weatherIcons[$normalizedDescription]) ? $weatherIcons[$normalizedDescription] : 'default');
+    return '' . (isset($weatherIcons[$normalizedDescription]) ? $weatherIcons[$normalizedDescription] : 'default');
 }
 
 include 'db.php'; // Dołączamy bazę danych po definicji funkcji
