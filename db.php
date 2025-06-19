@@ -1,7 +1,7 @@
 <?php
 $host = 'pogoda.database.windows.net';   // pogoda.postgres.database.azure.com
 $db   = 'BazaPogodowa';   // WeatherDB
-$user = 'Pawel';   // np. admin@pogoda
+$user = 'Pawel@pogoda';   // np. admin@pogoda
 $pass = 'Admin123';   // twoje hasło
 
 try {
