@@ -1,8 +1,8 @@
 <?php
-$host = getenv('DB_HOST');   // pogoda.postgres.database.azure.com
-$db   = getenv('DB_NAME');   // WeatherDB
-$user = getenv('DB_USER');   // np. admin@pogoda
-$pass = getenv('DB_PASS');   // twoje hasło
+$host = 'pogoda.database.windows.net';   // pogoda.postgres.database.azure.com
+$db   = 'BazaPogodowa';   // WeatherDB
+$user = 'Pawel';   // np. admin@pogoda
+$pass = 'Admin123';   // twoje hasło
 
 try {
     $dsn = "pgsql:host=$host;port=5432;dbname=$db;sslmode=require";
