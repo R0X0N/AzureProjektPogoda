@@ -1,5 +1,5 @@
-<!-- show.php -->
 <?php
+// <!-- BEZ ZMIAN -->
 include 'db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -50,17 +50,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare($query);
         $stmt->execute(['alert_id' => $alert_id]);
     }
+    // <!-- POPRAWKA: Przekierowanie, aby uniknąć ponownego wysłania formularza po odświeżeniu strony -->
+    header("Location: " . $_SERVER['REQUEST_URI']);
+    exit();
 }
 
+// <!-- BEZ ZMIAN -->
 // Pobieranie lokalizacji
 $lokalizacjeQuery = 'SELECT lokalizacja_id, nazwa_miejscowosci FROM lokalizacja';
 $lokalizacjeStmt = $pdo->query($lokalizacjeQuery);
 $lokalizacje = $lokalizacjeStmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Pobieranie województw
-$wojewodztwaQuery = 'SELECT wojewodztwo_id, nazwa FROM wojewodztwa';
-$wojewodztwaStmt = $pdo->query($wojewodztwaQuery);
-$wojewodztwa = $wojewodztwaStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Pobieranie opisów pogody
 $opisyPogodyQuery = 'SELECT opis_pogody_id, opis FROM opis_pogody';
@@ -76,13 +75,15 @@ $alerty = $alertyStmt->fetchAll(PDO::FETCH_ASSOC);
 $selected_lokalizacja_id = isset($_GET['lokalizacja_id']) ? $_GET['lokalizacja_id'] : null;
 $informacje = [];
 if ($selected_lokalizacja_id) {
-    $informacjeQuery = 'SELECT i.*, l.nazwa_miejscowosci, w.nazwa AS wojewodztwo, op.opis, a.alert
+    // <!-- BEZ ZMIAN W ZAPYTANIU, JEST DOBRE! -->
+    $informacjeQuery = 'SELECT i.*, l.nazwa_miejscowosci, w.nazwa AS wojewodztwo, op.opis AS opis_pogody, a.alert AS tresc_alertu
                         FROM informacje i
                         JOIN lokalizacja l ON i.lokalizacja_id = l.lokalizacja_id
                         JOIN wojewodztwa w ON l.wojewodztwo_id = w.wojewodztwo_id
                         JOIN opis_pogody op ON i.opis_pogody_id = op.opis_pogody_id
                         JOIN alerty a ON i.alert_id = a.alert_id
-                        WHERE i.lokalizacja_id = :lokalizacja_id';
+                        WHERE i.lokalizacja_id = :lokalizacja_id
+                        ORDER BY i.czas DESC'; // Dodano sortowanie dla lepszego wyglądu
     $informacjeStmt = $pdo->prepare($informacjeQuery);
     $informacjeStmt->execute(['lokalizacja_id' => $selected_lokalizacja_id]);
     $informacje = $informacjeStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -100,9 +101,7 @@ if ($selected_lokalizacja_id) {
 <body>
 <header>
     <div class="container">
-        <div id="branding">
-            <h1>Zarządzanie danymi pogodowymi</h1>
-        </div>
+        <h1>Zarządzanie danymi pogodowymi</h1>
     </div>
 </header>
 
@@ -115,17 +114,11 @@ if ($selected_lokalizacja_id) {
             <label for="lokalizacja_id">Lokalizacja:</label>
             <select name="lokalizacja_id" id="lokalizacja_id" required>
                 <?php foreach ($lokalizacje as $lokalizacja): ?>
-                    <option value="<?= $lokalizacja['lokalizacja_id'] ?>"><?= $lokalizacja['nazwa_miejscowosci'] ?></option>
+                    <option value="<?= htmlspecialchars($lokalizacja['lokalizacja_id']) ?>"><?= htmlspecialchars($lokalizacja['nazwa_miejscowosci']) ?></option>
                 <?php endforeach; ?>
             </select>
             <br>
-            <label for="wojewodztwo_id">Województwo:</label>
-            <select name="wojewodztwo_id" id="wojewodztwo_id" required>
-                <?php foreach ($wojewodztwa as $wojewodztwo): ?>
-                    <option value="<?= $wojewodztwo['wojewodztwo_id'] ?>"><?= $wojewodztwo['nazwa'] ?></option>
-                <?php endforeach; ?>
-            </select>
-            <br>
+            <!-- USUNIĘTO NIEPOTRZEBNE POLE WOJEWÓDZTWA, BO JEST POWIĄZANE Z LOKALIZACJĄ -->
             <label for="czas">Czas:</label>
             <input type="datetime-local" name="czas" id="czas" required>
             <br>
@@ -141,14 +134,14 @@ if ($selected_lokalizacja_id) {
             <label for="opis_pogody_id">Opis pogody:</label>
             <select name="opis_pogody_id" id="opis_pogody_id" required>
                 <?php foreach ($opisyPogody as $opis): ?>
-                    <option value="<?= $opis['opis_pogody_id'] ?>"><?= $opis['opis'] ?></option>
+                    <option value="<?= htmlspecialchars($opis['opis_pogody_id']) ?>"><?= htmlspecialchars($opis['opis']) ?></option>
                 <?php endforeach; ?>
             </select>
             <br>
             <label for="alert_id">Alert:</label>
             <select name="alert_id" id="alert_id" required>
                 <?php foreach ($alerty as $alert): ?>
-                    <option value="<?= $alert['alert_id'] ?>"><?= $alert['alert'] ?></option>
+                    <option value="<?= htmlspecialchars($alert['alert_id']) ?>"><?= htmlspecialchars($alert['alert']) ?></option>
                 <?php endforeach; ?>
             </select>
             <br>
@@ -156,60 +149,67 @@ if ($selected_lokalizacja_id) {
         </form>
     </div>
 
-    <!-- Formularz wyboru lokalizacji do wyświetlenia i usunięcia danych -->
+    <!-- Formularz wyboru lokalizacji -->
     <div class="tile">
-        <h2>Usuwanie danych</h2>
+        <h2>Wyświetl lub usuń dane dla lokalizacji</h2>
         <form method="get">
-            <label for="lokalizacja_id">Wybierz lokalizację:</label>
-            <select name="lokalizacja_id" id="lokalizacja_id">
+            <label for="lokalizacja_id_select">Wybierz lokalizację:</label>
+            <select name="lokalizacja_id" id="lokalizacja_id_select">
+                <option value="">-- Wybierz --</option>
                 <?php foreach ($lokalizacje as $lokalizacja): ?>
-                    <option value="<?= $lokalizacja['lokalizacja_id'] ?>" <?= ($selected_lokalizacja_id == $lokalizacja['lokalizacja_id']) ? 'selected' : '' ?>><?= $lokalizacja['nazwa_miejscowosci'] ?></option>
+                    <option value="<?= htmlspecialchars($lokalizacja['lokalizacja_id']) ?>" <?= ($selected_lokalizacja_id == $lokalizacja['lokalizacja_id']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($lokalizacja['nazwa_miejscowosci']) ?>
+                    </option>
                 <?php endforeach; ?>
             </select>
             <button type="submit">Wyświetl dane</button>
         </form>
     </div>
 
-    <?php if ($informacje): ?>
+    <?php if ($selected_lokalizacja_id && $informacje): ?>
         <div class="tile">
-            <h2>Dane pogodowe dla
-                lokalizacji: <?= $lokalizacje[array_search($selected_lokalizacja_id, array_column($lokalizacje, 'lokalizacja_id'))]['nazwa_miejscowosci'] ?></h2>
+            <h2>Dane pogodowe dla: <?= htmlspecialchars($informacje[0]['nazwa_miejscowosci']) ?></h2>
             <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Województwo</th>
-                    <th>Lokalizacja</th>
-                    <th>Czas</th>
-                    <th>Temperatura (°C)</th>
-                    <th>Wilgotność (%)</th>
-                    <th>Prędkość wiatru (km/h)</th>
-                    <th>Opis pogody</th>
-                    <th>Alert</th>
-                    <th>Akcje</th>
-                </tr>
-                <?php foreach ($informacje as $info): ?>
+                <thead>
                     <tr>
-                        <td><?= $info['informacje_id'] ?></td>
-                        <td><?= $wojewodztwo['nazwa'] ?></td>
-                        <td><?= $lokalizacje[array_search($info['lokalizacja_id'], array_column($lokalizacje, 'lokalizacja_id'))]['nazwa_miejscowosci'] ?></td>
-                        <td><?= $info['czas'] ?></td>
-                        <td><?= $info['temperatura'] ?></td>
-                        <td><?= $info['wilgotnosc'] ?></td>
-                        <td><?= $info['predkosc_wiatru'] ?></td>
-                        <td><?= $opisyPogody[array_search($info['opis_pogody_id'], array_column($opisyPogody, 'opis_pogody_id'))]['opis'] ?></td>
-                        <td><?= $alerty[array_search($info['alert_id'], array_column($alerty, 'alert_id'))]['alert'] ?></td>
-                        <td>
-                            <form method="post" style="display:inline;">
-                                <input type="hidden" name="informacje_id" value="<?= $info['informacje_id'] ?>">
-                                <button type="submit" name="delete">Usuń</button>
-                            </form>
-                        </td>
+                        <th>ID</th>
+                        <th>Województwo</th>
+                        <th>Lokalizacja</th>
+                        <th>Czas</th>
+                        <th>Temp.</th>
+                        <th>Wilgotność</th>
+                        <th>Wiatr</th>
+                        <th>Opis pogody</th>
+                        <th>Alert</th>
+                        <th>Akcje</th>
                     </tr>
-                <?php endforeach; ?>
+                </thead>
+                <tbody>
+                    <?php foreach ($informacje as $info): ?>
+                        <tr>
+                            <!-- POPRAWKA: Używamy danych pobranych bezpośrednio z zapytania z JOINami -->
+                            <td><?= htmlspecialchars($info['informacje_id']) ?></td>
+                            <td><?= htmlspecialchars($info['wojewodztwo']) ?></td>
+                            <td><?= htmlspecialchars($info['nazwa_miejscowosci']) ?></td>
+                            <td><?= htmlspecialchars($info['czas']) ?></td>
+                            <td><?= htmlspecialchars($info['temperatura']) ?>°C</td>
+                            <td><?= htmlspecialchars($info['wilgotnosc']) ?>%</td>
+                            <td><?= htmlspecialchars($info['predkosc_wiatru']) ?> km/h</td>
+                            <td><?= htmlspecialchars($info['opis_pogody']) ?></td>
+                            <td><?= htmlspecialchars($info['tresc_alertu']) ?></td>
+                            <td>
+                                <form method="post" style="display:inline;" onsubmit="return confirm('Czy na pewno chcesz usunąć ten wpis?');">
+                                    <input type="hidden" name="informacje_id" value="<?= htmlspecialchars($info['informacje_id']) ?>">
+                                    <button type="submit" name="delete">Usuń</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
             </table>
-            <form method="post">
-                <input type="hidden" name="lokalizacja_id" value="<?= $selected_lokalizacja_id ?>">
-                <button type="submit" name="delete_all">Usuń wszystkie dane dla tej lokalizacji</button>
+            <form method="post" onsubmit="return confirm('Czy na pewno chcesz usunąć WSZYSTKIE dane dla tej lokalizacji?');">
+                <input type="hidden" name="lokalizacja_id" value="<?= htmlspecialchars($selected_lokalizacja_id) ?>">
+                <button type="submit" name="delete_all" class="delete-all-btn">Usuń wszystkie dane dla tej lokalizacji</button>
             </form>
         </div>
     <?php elseif ($selected_lokalizacja_id): ?>
@@ -228,11 +228,11 @@ if ($selected_lokalizacja_id) {
         </div>
         <div>
             <h2>Usuń alert</h2>
-            <form method="post">
-                <label for="alert_id">Alert:</label>
-                <select name="alert_id" id="alert_id">
+            <form method="post" onsubmit="return confirm('Czy na pewno chcesz usunąć ten alert? Usunięcie może wpłynąć na istniejące dane pogodowe.');">
+                <label for="alert_id_delete">Alert:</label>
+                <select name="alert_id" id="alert_id_delete">
                     <?php foreach ($alerty as $alert): ?>
-                        <option value="<?= $alert['alert_id'] ?>"><?= $alert['alert'] ?></option>
+                        <option value="<?= htmlspecialchars($alert['alert_id']) ?>"><?= htmlspecialchars($alert['alert']) ?></option>
                     <?php endforeach; ?>
                 </select>
                 <button type="submit" name="delete_alert">Usuń alert</button>
