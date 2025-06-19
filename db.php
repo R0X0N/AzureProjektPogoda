@@ -5,10 +5,12 @@ $user = 'Pawel';   // np. admin@pogoda
 $pass = 'Admin123';   // twoje hasło
 
 try {
-    $dsn = "pgsql:host=$host;port=5432;dbname=$db;sslmode=require";
-    $pdo = new PDO($dsn, $user, $pass);
+    // Dla Microsoft SQL Server używamy DSN: sqlsrv
+    $dsn = "sqlsrv:server=$server;Database=$database";
+    
+    $pdo = new PDO($dsn, $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    echo "Połączenie udane!";
+    echo "Połączenie OK!";
 } catch (PDOException $e) {
     echo "Błąd połączenia: " . $e->getMessage();
 }
