@@ -1,9 +1,9 @@
 <?php
 // Dane do połączenia z bazą danych
-$host = 'localhost';
-$db = 'WeatherDB';
-$user = 'postgres';
-$pass = '123';
+$host = 'pogoda.postgres.database.azure.com';
+$db = 'BazaPogodowa';
+$user = 'Pawel';
+$pass = 'Admin123';
 
 
 try {
