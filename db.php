@@ -12,7 +12,7 @@ try {
     // Ustawienie atrybutów PDO jest dobrą praktyką
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    echo "Połączenie OK!";
+    //echo "Połączenie OK!";
 
 } catch (PDOException $e) {
     // Wypisanie błędu
