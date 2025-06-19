@@ -5,9 +5,8 @@ $user = 'Pawel';   // np. admin@pogoda
 $pass = 'Admin123';   // twoje hasło
 
 try {
-    // Dla Microsoft SQL Server używamy DSN: sqlsrv
+    // DLA SQL SERVER - WAŻNE: sqlsrv + portu nie podajemy, używa 1433 domyślnie!
     $dsn = "sqlsrv:server=$server;Database=$database";
-    
     $pdo = new PDO($dsn, $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     echo "Połączenie OK!";
